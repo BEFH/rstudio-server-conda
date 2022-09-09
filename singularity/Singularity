@@ -2,8 +2,8 @@ Bootstrap: docker
 From: rocker/rstudio:4.1.3
 
 %files
-    00-modulepath.sh /etc/profile.d/
-    00-modulepath.csh /etc/profile.d/
+    singularity/00-modulepath.sh /etc/profile.d/
+    singularity/00-modulepath.csh /etc/profile.d/
 
 %post
     apt-get update && \
