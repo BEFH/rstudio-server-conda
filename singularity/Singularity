@@ -27,6 +27,7 @@ From: rocker/rstudio:4.1.3
     bash ~/miniconda.sh -b -p /opt/conda
     . /opt/conda/etc/profile.d/conda.sh
     conda install -c conda-forge -y mamba
+    echo "done"
 
 %environment
     export CONDA_PREFIX=${RS_CONDAENV:-$CONDA_DEFAULT_ENV}
