@@ -4,8 +4,7 @@ on:
 
     # Edit the branches here if you want to change deploy behavior
     branches:
-      - main
-      - master
+      - dev
 
   # Do the builds on all pull requests (to test them)
   pull_request: []
@@ -109,5 +108,5 @@ jobs:
                 #singularity push container.sif oras://ghcr.io/${GITHUB_REPOSITORY}:${tag}
                 echo ${{ secrets.SINGULARITY_KEY }} > /tmp/s.key
                 singularity remote login --tokenfile /tmp/s.key SylabsCloud
-                singularity push -U container.sif library://befh/rstudio/rstudio-server-conda:latest
+                singularity push -U container.sif library://befh/rstudio/rstudio-server-conda:dev
             fi
