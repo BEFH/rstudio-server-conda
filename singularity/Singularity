@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: rocker/rstudio:4.1.3
+From: rocker/rstudio:4.2
 
 %files
     singularity/00-modulepath.sh /etc/profile.d/
@@ -16,6 +16,7 @@ From: rocker/rstudio:4.1.3
     cd Lmod-8.7.12 && \
     ./configure --prefix=/opt/apps && \
     make install && \
+    chmod a+rX /opt/apps && \
     cd .. && \
     rm -rf cd Lmod-8.7.12 && \
     mkdir -p /etc/fish/conf.d && \
@@ -40,7 +41,7 @@ From: rocker/rstudio:4.1.3
       echo "activating env $CONDA_PREFIX" && \
       conda activate $CONDA_PREFIX && \
       echo "starting RStudio Server" && \
-      exec rserver "${@}"
+      exec /usr/lib/rstudio-server/bin/rserver "${@}"
 
 %apprun bash
     echo "enabling conda" && \

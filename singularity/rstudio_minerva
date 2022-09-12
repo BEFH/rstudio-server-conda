@@ -320,6 +320,7 @@ S_FILE_JOB="$RS_WORKDIR/rstudio$S_SESSION.lsf"
 S_FILE_IP="$RS_WORKDIR/rsip$S_SESSION"
 S_FILE_LOGCONF="$RS_WORKDIR/logging.conf"
 S_DIR_LOGCONF="$RS_WORKDIR/serverlogs/$S_SESSION"
+S_DIR_CONFIG="/hpc/users/$S_USERNAME/.config/rstudio"
 
 ###############################################################################
 # Check directories, files, image, and password                               #
@@ -327,15 +328,22 @@ S_DIR_LOGCONF="$RS_WORKDIR/serverlogs/$S_SESSION"
 
 echoinfo "Checking directories, files, image, and password"
 
+ssh $S_HOSTNAME bash <<ENDSSH
 # check workdir
-if ! ssh $S_HOSTNAME "test -d \"$RS_WORKDIR\""; then
-  ssh $S_HOSTNAME "mkdir -p \"$RS_WORKDIR\""
+if [[ ! -d \"$RS_WORKDIR\" ]]; then
+  mkdir -p \"$RS_WORKDIR\"
 fi
 
 # check logdir
-if ! ssh $S_HOSTNAME "test -d \"$S_DIR_LOGCONF\""; then
-  ssh $S_HOSTNAME "mkdir -p \"$S_DIR_LOGCONF\""
+if [[ ! -d \"$S_DIR_LOGCONF\" ]]; then
+  mkdir -p \"$S_DIR_LOGCONF\"
 fi
+
+# check confdir
+if [[ ! -d \"$S_DIR_CONFIG\" ]]; then
+  mkdir -p \"$S_DIR_CONFIG\"
+fi
+ENDSSH
 
 # Check for password
 create_rstudio_passwd_on_file () {
@@ -496,21 +504,26 @@ else
 fi
 
 # check for log files from a previous session in the home directory of the cluster
-if ssh $S_HOSTNAME "test -f $S_FILE_RECONNECT"; then
-  echoinfo "Found old remote session file, deleting it ..."
-  ssh $S_HOSTNAME "rm $S_FILE_RECONNECT"
+info_sessionfile=$(echoinfo "Found old remote session file, deleting it ...")
+info_ipfile=$(echoinfo "Found old IP file, deleting it ...")
+info_jobfile=$(echoinfo "Found old job file, deleting it ...")
+
+ssh $S_HOSTNAME bash <<ENDSSH
+if [[ -f $S_FILE_RECONNECT ]]; then
+  echo $info_sessionfile
+  rm $S_FILE_RECONNECT
 fi
 
-if ssh $S_HOSTNAME "test -f $S_FILE_IP"; then
-  echoinfo "Found old IP file, deleting it ..."
-  ssh $S_HOSTNAME "rm $S_FILE_IP"
+if [[ -f $S_FILE_IP ]]; then
+  echo $info_ipfile
+  rm $S_FILE_IP
 fi
 
-if ssh $S_HOSTNAME "test -f $S_FILE_JOB"; then
-  echoinfo "Found old job file, deleting it ..."
-  ssh $S_HOSTNAME "rm $S_FILE_JOB"
+if [[ -f $S_FILE_JOB ]]; then
+  echo $info_jobfile
+  rm $S_FILE_JOB
 fi
-
+ENDSSH
 
 ###############################################################################
 # Check configuration options                                                 #
@@ -586,7 +599,7 @@ fi
 # Start rstudio server on the cluster                                         #
 ###############################################################################
 
-RS_CONDADIRS=$(ssh chimera "conda info" | awk '
+RS_CONDADIRS=$(ssh $S_HOSTNAME "conda info" | awk '
   $0 ~ "envs directories" {a = 1; print $4; next} \
   $0 ~ ":" {a = 0} a == 1 {print $1}')
 
@@ -732,7 +745,7 @@ ENDSSH
 else
   ssh -T $S_HOSTNAME <<ENDSSH
   if [ ! -z "\$MODULEPATH" ]; then
-    for j in \${MODULEPATH//,/ }; do
+    for j in \${MODULEPATH//:/ }; do
       bindstr="  --bind \$j \\\\"
       echo "\$bindstr" >> $S_FILE_JOB
     done
