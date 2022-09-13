@@ -31,15 +31,15 @@ From: rocker/rstudio:4.2
     echo "done"
 
 %environment
-    export CONDA_PREFIX=${RS_CONDAENV:-$CONDA_DEFAULT_ENV}
-    export MODULEPATH=/etc/modulefiles:/usr/share/modulefiles
+    export MODULEPATH=/usr/share/lmod/lmod/modulefiles/Core:/opt/hpc/packages/minerva-centos7/modulefiles:/opt/hpc/packages/minerva-common/modulefiles
+    export RS_CONDAENV=${RS_CONDAENV:-$CONDA_DEFAULT_ENV}
 
 %apprun rserver
     echo "enabling conda" && \
       . /opt/conda/etc/profile.d/conda.sh && \
       . /opt/conda/etc/profile.d/mamba.sh && \
-      echo "activating env $CONDA_PREFIX" && \
-      conda activate $CONDA_PREFIX && \
+      echo "activating env $RS_CONDAENV" && \
+      conda activate $RS_CONDAENV && \
       echo "starting RStudio Server" && \
       exec /usr/lib/rstudio-server/bin/rserver "${@}"
 
@@ -47,8 +47,8 @@ From: rocker/rstudio:4.2
     echo "enabling conda" && \
       . /opt/conda/etc/profile.d/conda.sh && \
       . /opt/conda/etc/profile.d/mamba.sh && \
-      echo "activating env $CONDA_PREFIX" && \
-      conda activate $CONDA_PREFIX && \
+      echo "activating env $RS_CONDAENV" && \
+      conda activate $RS_CONDAENV && \
       echo "starting BASH" && \
       /bin/bash
 
